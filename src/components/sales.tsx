@@ -1,7 +1,7 @@
 import { Alert, Box, Button, MenuItem, Paper, Snackbar, TextField, Typography } from '@mui/material';
 import type { SnackbarCloseReason } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import DescriptionIcon from '@mui/icons-material/Description';
+import PointOfSaleRoundedIcon from '@mui/icons-material/PointOfSaleRounded';
 import { useState } from 'react';
 import type React from 'react';
 import { addExpense } from '../Services/client';
@@ -68,32 +68,31 @@ const Sales = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: 'grey.100',
-      }}
-    >
-      <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 400 }}>
-        <Typography
-          variant="h5"
-          component="h1"
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1 , color: 'black' }}
-        >
-          <DescriptionIcon />
-          Sales Record
+    <Box className="sales-layout">
+      <Box className="sales-intro">
+        <Box className="sales-intro-icon">
+          <PointOfSaleRoundedIcon />
+        </Box>
+        <Typography component="h2">Make your next sale count.</Typography>
+        <Typography>
+          Capture the details once. Your records and totals stay together, ready whenever you need
+          them.
+        </Typography>
+      </Box>
+
+      <Paper component="section" className="form-card" elevation={0}>
+        <Typography component="h2" className="form-heading">
+          Sale details
+        </Typography>
+        <Typography className="form-subheading">
+          Add the customer and transaction information below.
         </Typography>
 
-        <Box component="form" noValidate onSubmit={handleSubmit}>
+        <Box component="form" noValidate onSubmit={handleSubmit} className="form-fields">
           <TextField
             label="Customer name"
-            variant="standard"
+            variant="outlined"
             fullWidth
-            margin="normal"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -101,9 +100,8 @@ const Sales = () => {
           <TextField
             select
             label="Category"
-            variant="standard"
+            variant="outlined"
             fullWidth
-            margin="normal"
             value={category}
             onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
           >
@@ -117,35 +115,34 @@ const Sales = () => {
           <TextField
             label="Selling Amount (₹)"
             type="number"
-            variant="standard"
+            variant="outlined"
             fullWidth
-            margin="normal"
             value={sellingPrice}
             onChange={(e) => setSellingPrice(Number(e.target.value))}
+            slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
           />
           <TextField
             label="Amount (₹)"
             type="number"
-            variant="standard"
+            variant="outlined"
             fullWidth
-            margin="normal"
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
+            slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
           />
           <TextField
             label="Description"
-            variant="standard"
+            variant="outlined"
             fullWidth
-            margin="normal"
+            className="field-wide"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
           <TextField
             label="Date"
             type="date"
-            variant="standard"
+            variant="outlined"
             fullWidth
-            margin="normal"
             value={savedOn}
             onChange={(e) => setSavedOn(e.target.value)}
             slotProps={{ inputLabel: { shrink: true } }}
@@ -156,8 +153,8 @@ const Sales = () => {
             variant="contained"
             fullWidth
             size="large"
+            className="primary-action field-wide"
             disabled={!category || saving}
-            sx={{ mt: 2 }}
           >
             {saving ? 'Saving...' : 'Save'}
           </Button>

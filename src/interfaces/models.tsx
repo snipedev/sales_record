@@ -13,6 +13,7 @@ export const ExpenseCategory = {
   Travel: "Travel",
   Furniture: "Furniture",
   Utilities: "Utilities",
+  Apparel:"Apparels",
   Other: "Other",
 } as const;
 

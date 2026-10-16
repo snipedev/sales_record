@@ -10,7 +10,10 @@ import {
   TableRow,
   Chip,
 } from '@mui/material';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
+import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import type { ExpenseRecord } from '../interfaces/models';
 
 interface ExpenseListProps {
@@ -36,25 +39,66 @@ const ExpenseList = ({ expenses }: ExpenseListProps) => {
   const totalProfit = totalSelling - totalAmount;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.100', p: 3 }}>
-      <Paper elevation={3} sx={{ p: 3, maxWidth: 1100, mx: 'auto' }}>
-        <Typography
-          variant="h5"
-          component="h1"
-          gutterBottom
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'black' }}
-        >
-          <ReceiptLongIcon />
-          Expense Records
-        </Typography>
+    <Box className="records-page">
+      <Box className="records-heading">
+        <Box>
+          <Typography component="h1">Records overview</Typography>
+          <Typography>Review your sales, costs, and profit in one place.</Typography>
+        </Box>
+        <Box className="records-count">
+          {expenses.length} {expenses.length === 1 ? 'record' : 'records'}
+        </Box>
+      </Box>
 
+      <Box className="summary-grid">
+        <Paper className="summary-card" elevation={0}>
+          <Box className="summary-icon amber">
+            <AccountBalanceWalletRoundedIcon />
+          </Box>
+          <Box>
+            <Typography className="summary-label">Total cost</Typography>
+            <Typography className="summary-value">{formatAmount(totalAmount)}</Typography>
+          </Box>
+        </Paper>
+        <Paper className="summary-card" elevation={0}>
+          <Box className="summary-icon">
+            <Inventory2RoundedIcon />
+          </Box>
+          <Box>
+            <Typography className="summary-label">Total sales</Typography>
+            <Typography className="summary-value">{formatAmount(totalSelling)}</Typography>
+          </Box>
+        </Paper>
+        <Paper className="summary-card" elevation={0}>
+          <Box className="summary-icon green">
+            <TrendingUpRoundedIcon />
+          </Box>
+          <Box>
+            <Typography className="summary-label">Net profit</Typography>
+            <Typography
+              className="summary-value"
+              sx={{ color: totalProfit < 0 ? 'error.main' : 'success.main' }}
+            >
+              {formatAmount(totalProfit)}
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+
+      <Paper className="records-table-card" elevation={0}>
         {expenses.length === 0 ? (
-          <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-            No expense records yet.
-          </Typography>
+          <Box className="empty-state">
+            <Box className="empty-state-icon">
+              <ReceiptLongRoundedIcon />
+            </Box>
+            <Typography className="empty-state-title">No records just yet</Typography>
+            <Typography color="text.secondary">
+              Your saved sales will appear here when you add one.
+            </Typography>
+          </Box>
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer className="records-table-scroll">
+            <Table className="records-table">
               <TableHead>
                 <TableRow>
                   <TableCell>Date</TableCell>
@@ -62,7 +106,7 @@ const ExpenseList = ({ expenses }: ExpenseListProps) => {
                   <TableCell>Category</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell align="right">Amount</TableCell>
-                  <TableCell align="right">Selling Price</TableCell>
+                  <TableCell align="right">Selling price</TableCell>
                   <TableCell align="right">Profit</TableCell>
                 </TableRow>
               </TableHead>
@@ -71,33 +115,50 @@ const ExpenseList = ({ expenses }: ExpenseListProps) => {
                   const profit = expense.sellingPrice - expense.amount;
                   return (
                     <TableRow key={expense.id} hover>
-                      <TableCell>{formatDate(expense.spentOn)}</TableCell>
-                      <TableCell>{expense.title}</TableCell>
-                      <TableCell>
-                        <Chip label={expense.category} size="small" />
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        {formatDate(expense.spentOn)}
                       </TableCell>
-                      <TableCell>{expense.description}</TableCell>
+                      <TableCell sx={{ color: '#25324a !important', fontWeight: 650 }}>
+                        {expense.title}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={expense.category}
+                          size="small"
+                          sx={{
+                            borderRadius: 2,
+                            color: '#5366ce',
+                            bgcolor: '#eff1ff',
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{expense.description || '—'}</TableCell>
                       <TableCell align="right">{formatAmount(expense.amount)}</TableCell>
                       <TableCell align="right">{formatAmount(expense.sellingPrice)}</TableCell>
-                      <TableCell align="right" sx={{ color: profitColor(profit) }}>
+                      <TableCell
+                        align="right"
+                        sx={{ color: profitColor(profit), fontWeight: 700, whiteSpace: 'nowrap' }}
+                      >
                         {formatAmount(profit)}
                       </TableCell>
                     </TableRow>
                   );
                 })}
-                <TableRow>
-                  <TableCell colSpan={4} sx={{ fontWeight: 'bold' }}>
+                <TableRow className="total-row">
+                  <TableCell colSpan={4} sx={{ color: '#25324a !important', fontWeight: 750 }}>
                     Total
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                  <TableCell align="right" sx={{ color: '#25324a !important', fontWeight: 750 }}>
                     {formatAmount(totalAmount)}
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                  <TableCell align="right" sx={{ color: '#25324a !important', fontWeight: 750 }}>
                     {formatAmount(totalSelling)}
                   </TableCell>
                   <TableCell
                     align="right"
-                    sx={{ fontWeight: 'bold', color: profitColor(totalProfit) }}
+                    sx={{ fontWeight: 750, color: profitColor(totalProfit), whiteSpace: 'nowrap' }}
                   >
                     {formatAmount(totalProfit)}
                   </TableCell>
