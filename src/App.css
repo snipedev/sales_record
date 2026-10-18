@@ -361,6 +361,31 @@
   box-shadow: 0 7px 24px rgba(22, 37, 68, 0.035) !important;
 }
 
+.records-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #eff1f5;
+}
+
+.records-filters .MuiTextField-root {
+  width: 190px;
+}
+
+.records-filters .MuiInputBase-root {
+  background: #fff;
+  font-size: 12px;
+}
+
+.clear-record-filters {
+  color: #5369e5 !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  text-transform: none !important;
+}
+
 .records-table-scroll {
   overflow-x: auto;
 }
@@ -557,11 +582,19 @@
   .summary-card {
     padding: 15px;
   }
+
+  .records-filters {
+    padding: 14px;
+  }
 }
 
 @media (max-width: 480px) {
   .topbar-date {
     display: none;
+  }
+
+  .records-filters .MuiTextField-root {
+    width: 100%;
   }
 
   .form-card {

@@ -9,7 +9,11 @@ import {
   TableHead,
   TableRow,
   Chip,
+  MenuItem,
+  TextField,
+  Button,
 } from '@mui/material';
+import { useState } from 'react';
 import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
@@ -33,9 +37,31 @@ const formatDate = (date: string) =>
 const profitColor = (profit: number) =>
   profit > 0 ? 'success.main' : profit < 0 ? 'error.main' : 'text.primary';
 
+const formatMonth = (month: string) => {
+  const [year, monthNumber] = month.split('-').map(Number);
+  return new Date(year, monthNumber - 1, 1).toLocaleDateString('en-IN', {
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
 const ExpenseList = ({ expenses }: ExpenseListProps) => {
-  const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalSelling = expenses.reduce((sum, e) => sum + e.sellingPrice, 0);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const months = [...new Set(expenses.map((expense) => expense.spentOn.slice(0, 7)))]
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a));
+  const categories = [...new Set(expenses.map((expense) => expense.category))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const filteredExpenses = expenses.filter(
+    (expense) =>
+      (!selectedMonth || expense.spentOn.startsWith(selectedMonth)) &&
+      (!selectedCategory || expense.category === selectedCategory),
+  );
+  const hasActiveFilters = Boolean(selectedMonth || selectedCategory);
+  const totalAmount = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalSelling = filteredExpenses.reduce((sum, e) => sum + e.sellingPrice, 0);
   const totalProfit = totalSelling - totalAmount;
 
   return (
@@ -46,7 +72,9 @@ const ExpenseList = ({ expenses }: ExpenseListProps) => {
           <Typography>Review your sales, costs, and profit in one place.</Typography>
         </Box>
         <Box className="records-count">
-          {expenses.length} {expenses.length === 1 ? 'record' : 'records'}
+          {filteredExpenses.length}
+          {hasActiveFilters ? ` of ${expenses.length}` : ''}{' '}
+          {filteredExpenses.length === 1 ? 'record' : 'records'}
         </Box>
       </Box>
 
@@ -97,75 +125,138 @@ const ExpenseList = ({ expenses }: ExpenseListProps) => {
             </Typography>
           </Box>
         ) : (
-          <TableContainer className="records-table-scroll">
-            <Table className="records-table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell align="right">Amount</TableCell>
-                  <TableCell align="right">Selling price</TableCell>
-                  <TableCell align="right">Profit</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {expenses.map((expense) => {
-                  const profit = expense.sellingPrice - expense.amount;
-                  return (
-                    <TableRow key={expense.id} hover>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                        {formatDate(expense.spentOn)}
+          <>
+            <Box className="records-filters">
+              <TextField
+                select
+                size="small"
+                label="Month"
+                value={selectedMonth}
+                onChange={(event) => setSelectedMonth(event.target.value)}
+              >
+                <MenuItem value="">All months</MenuItem>
+                {months.map((month) => (
+                  <MenuItem key={month} value={month}>
+                    {formatMonth(month)}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                size="small"
+                label="Category"
+                value={selectedCategory}
+                onChange={(event) => setSelectedCategory(event.target.value)}
+              >
+                <MenuItem value="">All categories</MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </TextField>
+              {hasActiveFilters && (
+                <Button
+                  className="clear-record-filters"
+                  onClick={() => {
+                    setSelectedMonth('');
+                    setSelectedCategory('');
+                  }}
+                >
+                  Clear filters
+                </Button>
+              )}
+            </Box>
+            {filteredExpenses.length === 0 ? (
+              <Box className="empty-state">
+                <Box className="empty-state-icon">
+                  <ReceiptLongRoundedIcon />
+                </Box>
+                <Typography className="empty-state-title">No matching records</Typography>
+                <Typography color="text.secondary">
+                  Try changing or clearing your filters.
+                </Typography>
+              </Box>
+            ) : (
+              <TableContainer className="records-table-scroll">
+                <Table className="records-table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Date</TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Category</TableCell>
+                      <TableCell>Description</TableCell>
+                      <TableCell align="right">Amount</TableCell>
+                      <TableCell align="right">Selling price</TableCell>
+                      <TableCell align="right">Profit</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredExpenses.map((expense) => {
+                      const profit = expense.sellingPrice - expense.amount;
+                      return (
+                        <TableRow key={expense.id} hover>
+                          <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                            {formatDate(expense.spentOn)}
+                          </TableCell>
+                          <TableCell sx={{ color: '#25324a !important', fontWeight: 650 }}>
+                            {expense.title}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={expense.category}
+                              size="small"
+                              sx={{
+                                borderRadius: 2,
+                                color: '#5366ce',
+                                bgcolor: '#eff1ff',
+                                fontSize: 10,
+                                fontWeight: 700,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{expense.description || '—'}</TableCell>
+                          <TableCell align="right">{formatAmount(expense.amount)}</TableCell>
+                          <TableCell align="right">{formatAmount(expense.sellingPrice)}</TableCell>
+                          <TableCell
+                            align="right"
+                            sx={{
+                              color: profitColor(profit),
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {formatAmount(profit)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    <TableRow className="total-row">
+                      <TableCell colSpan={4} sx={{ color: '#25324a !important', fontWeight: 750 }}>
+                        Total
                       </TableCell>
-                      <TableCell sx={{ color: '#25324a !important', fontWeight: 650 }}>
-                        {expense.title}
+                      <TableCell align="right" sx={{ color: '#25324a !important', fontWeight: 750 }}>
+                        {formatAmount(totalAmount)}
                       </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={expense.category}
-                          size="small"
-                          sx={{
-                            borderRadius: 2,
-                            color: '#5366ce',
-                            bgcolor: '#eff1ff',
-                            fontSize: 10,
-                            fontWeight: 700,
-                          }}
-                        />
+                      <TableCell align="right" sx={{ color: '#25324a !important', fontWeight: 750 }}>
+                        {formatAmount(totalSelling)}
                       </TableCell>
-                      <TableCell>{expense.description || '—'}</TableCell>
-                      <TableCell align="right">{formatAmount(expense.amount)}</TableCell>
-                      <TableCell align="right">{formatAmount(expense.sellingPrice)}</TableCell>
                       <TableCell
                         align="right"
-                        sx={{ color: profitColor(profit), fontWeight: 700, whiteSpace: 'nowrap' }}
+                        sx={{
+                          fontWeight: 750,
+                          color: profitColor(totalProfit),
+                          whiteSpace: 'nowrap',
+                        }}
                       >
-                        {formatAmount(profit)}
+                        {formatAmount(totalProfit)}
                       </TableCell>
                     </TableRow>
-                  );
-                })}
-                <TableRow className="total-row">
-                  <TableCell colSpan={4} sx={{ color: '#25324a !important', fontWeight: 750 }}>
-                    Total
-                  </TableCell>
-                  <TableCell align="right" sx={{ color: '#25324a !important', fontWeight: 750 }}>
-                    {formatAmount(totalAmount)}
-                  </TableCell>
-                  <TableCell align="right" sx={{ color: '#25324a !important', fontWeight: 750 }}>
-                    {formatAmount(totalSelling)}
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{ fontWeight: 750, color: profitColor(totalProfit), whiteSpace: 'nowrap' }}
-                  >
-                    {formatAmount(totalProfit)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </>
         )}
       </Paper>
     </Box>
